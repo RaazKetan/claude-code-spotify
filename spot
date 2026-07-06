@@ -3,6 +3,9 @@
 # usage: spot [play|pause|stop|next|prev|current|vol N|search QUERY...]
 set -e
 
+# spotify-lyrics.py lives next to this script (works from ~/.claude or a plugin dir)
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+
 sp() { osascript -e "tell application \"Spotify\" to $1" 2>/dev/null; }
 
 running() { osascript -e 'tell application "System Events" to (exists process "Spotify")' 2>/dev/null; }
@@ -32,7 +35,7 @@ case "${1:-current}" in
     sp "play track \"$uri\""
     echo "▶ $label"
     ;;
-  lyrics)            exec python3 "$HOME/.claude/spotify-lyrics.py" ;;
+  lyrics)            exec python3 "$HERE/spotify-lyrics.py" ;;
   current|now|song)
     [ "$(running)" = "true" ] || { echo "Spotify not running"; exit 0; }
     sp 'return (artist of current track) & " – " & (name of current track)' ;;
