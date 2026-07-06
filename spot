@@ -1,0 +1,40 @@
+#!/bin/bash
+# spot — control Spotify from the terminal. ponytail: AppleScript, no deps.
+# usage: spot [play|pause|stop|next|prev|current|vol N|search QUERY...]
+set -e
+
+sp() { osascript -e "tell application \"Spotify\" to $1" 2>/dev/null; }
+
+running() { osascript -e 'tell application "System Events" to (exists process "Spotify")' 2>/dev/null; }
+
+case "${1:-current}" in
+  play)              sp "play" ;;
+  pause)             sp "pause" ;;
+  stop)              sp "pause" ;;  # Spotify has no stop; pause is it
+  next)              sp "next track" ;;
+  prev|previous)     sp "previous track"; sp "previous track" ;;  # twice = actual prev
+  toggle|playpause)  sp "playpause" ;;
+  vol)               sp "set sound volume to ${2:?vol needs 0-100}" ;;
+  search|play-song)
+    shift
+    q="$*"; [ -z "$q" ] && { echo "search needs a query"; exit 1; }
+    [ -f "$HOME/.claude/.spotify-creds" ] || { echo "no creds; using app search"; open "spotify:search:${q// /%20}"; exit 0; }
+    . "$HOME/.claude/.spotify-creds"
+    tok=$(curl -s -X POST https://accounts.spotify.com/api/token \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "grant_type=client_credentials&client_id=$SPOTIFY_ID&client_secret=$SPOTIFY_SECRET" \
+      | python3 -c "import sys,json;print(json.load(sys.stdin).get('access_token',''))")
+    [ -z "$tok" ] && { echo "token failed"; exit 1; }
+    read -r uri label < <(curl -s -G "https://api.spotify.com/v1/search" \
+      -H "Authorization: Bearer $tok" --data-urlencode "q=$q" -d type=track -d limit=1 \
+      | python3 -c "import sys,json;i=json.load(sys.stdin)['tracks']['items'];print(i[0]['uri'],i[0]['artists'][0]['name'],'-',i[0]['name']) if i else print('','')")
+    [ -z "$uri" ] && { echo "no results for: $q"; exit 1; }
+    sp "play track \"$uri\""
+    echo "▶ $label"
+    ;;
+  lyrics)            exec python3 "$HOME/.claude/spotify-lyrics.py" ;;
+  current|now|song)
+    [ "$(running)" = "true" ] || { echo "Spotify not running"; exit 0; }
+    sp 'return (artist of current track) & " – " & (name of current track)' ;;
+  *) echo "usage: spot [play|pause|stop|next|prev|current|vol N|search QUERY|lyrics]"; exit 1 ;;
+esac
