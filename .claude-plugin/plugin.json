@@ -7,8 +7,8 @@
     "name": "Ketan Raj",
     "url": "https://github.com/RaazKetan"
   },
-  "homepage": "https://github.com/RaazKetan/claude-spotify-statusline",
-  "repository": "https://github.com/RaazKetan/claude-spotify-statusline",
+  "homepage": "https://github.com/RaazKetan/claude-code-spotify",
+  "repository": "https://github.com/RaazKetan/claude-code-spotify",
   "license": "MIT",
   "keywords": ["statusline", "spotify", "lyrics", "macos"],
   "hooks": "./hooks/hooks.json"

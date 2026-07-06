@@ -1,4 +1,4 @@
-# 🎵 claude-spotify-statusline
+# 🎵 claude-code-spotify
 
 A [Claude Code](https://claude.com/claude-code) statusline that shows your
 session at a glance **and** the live, synced lyric of whatever's playing on
@@ -22,11 +22,11 @@ Left to right: **session · model · folder · git branch · PR · context-usage
 Inside Claude Code:
 
 ```
-/plugin marketplace add RaazKetan/claude-spotify-statusline
+/plugin marketplace add RaazKetan/claude-code-spotify
 /plugin install spotify-statusline
 ```
 
-Or just **ask Claude**: *"add the RaazKetan/claude-spotify-statusline plugin"* — it runs those commands for you. Restart Claude Code and the statusline activates itself: a bundled hook safely points your `settings.json` at the plugin's `statusline.py` — idempotent, preserves your other settings, self-heals on update.
+Or just **ask Claude**: *"add the RaazKetan/claude-code-spotify plugin"* — it runs those commands for you. Restart Claude Code and the statusline activates itself: a bundled hook safely points your `settings.json` at the plugin's `statusline.py` — idempotent, preserves your other settings, self-heals on update.
 
 To turn it off: `/plugin uninstall spotify-statusline` and remove the `statusLine` key from `~/.claude/settings.json`.
 
