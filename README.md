@@ -19,8 +19,6 @@ Left to right: **session · model · folder · git branch · PR · context-usage
 
 ## Install
 
-### As a Claude Code plugin (recommended)
-
 Inside Claude Code:
 
 ```
@@ -28,49 +26,14 @@ Inside Claude Code:
 /plugin install spotify-statusline
 ```
 
-Or just **ask Claude**: *"add the RaazKetan/claude-spotify-statusline plugin"* — it runs those commands for you. Restart Claude Code and the statusline activates itself (a bundled hook safely points your `settings.json` at the plugin's `statusline.py` — idempotent, preserves your other settings, self-heals on update). No curl, no manual editing.
+Or just **ask Claude**: *"add the RaazKetan/claude-spotify-statusline plugin"* — it runs those commands for you. Restart Claude Code and the statusline activates itself: a bundled hook safely points your `settings.json` at the plugin's `statusline.py` — idempotent, preserves your other settings, self-heals on update.
 
 To turn it off: `/plugin uninstall spotify-statusline` and remove the `statusLine` key from `~/.claude/settings.json`.
 
-### One-liner (no plugin system)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/RaazKetan/claude-spotify-statusline/main/install.sh | bash
-```
-
-Then **restart Claude Code**.
-
-<details>
-<summary>From a clone (if you'd rather read it first)</summary>
-
-```bash
-git clone https://github.com/RaazKetan/claude-spotify-statusline.git
-cd claude-spotify-statusline
-./install.sh
-```
-</details>
-
-<details>
-<summary>Manual</summary>
-
-1. Copy `spot`, `spotify-lyrics.py`, `statusline.py` to `~/.claude/` and `chmod +x` them.
-2. Add to `~/.claude/settings.json`:
-   ```json
-   {
-     "statusLine": {
-       "type": "command",
-       "command": "python3 \"$HOME/.claude/statusline.py\"",
-       "refreshInterval": 1
-     }
-   }
-   ```
-3. Optional alias: `echo 'alias spot="$HOME/.claude/spot"' >> ~/.zshrc`
-4. Restart Claude Code.
-</details>
-
-The installer is idempotent — re-run it any time to update.
-
 ## `spot` — terminal remote
+
+`spot` ships alongside the statusline in the plugin directory. To use it in your
+shell, alias it there — e.g. `alias spot="$HOME/.claude/plugins/marketplaces/spotify-statusline/spot"`.
 
 ```bash
 spot                 # now playing
@@ -86,7 +49,7 @@ spot lyrics          # full-screen fading synced lyrics (Ctrl-C to exit)
 Only `spot search` / auto-play use the Spotify Web API — playback and lyrics don't.
 
 1. <https://developer.spotify.com/dashboard> → **Create app** (any name/redirect).
-2. Re-run the installer, or drop the creds in `~/.claude/.spotify-creds` (chmod 600):
+2. Drop the creds in `~/.claude/.spotify-creds` (chmod 600):
    ```
    SPOTIFY_ID=your_client_id
    SPOTIFY_SECRET=your_client_secret
