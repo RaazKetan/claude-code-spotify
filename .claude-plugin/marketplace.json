@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "spotify-statusline",
+  "description": "A Claude Code statusline with live Spotify lyrics, plus a terminal Spotify remote.",
+  "owner": {
+    "name": "Ketan Raj",
+    "url": "https://github.com/RaazKetan"
+  },
+  "plugins": [
+    {
+      "name": "spotify-statusline",
+      "source": "./",
+      "description": "Statusline: session · model · branch · PR · context bar · live Spotify lyric. macOS.",
+      "category": "productivity",
+      "keywords": ["statusline", "spotify", "lyrics"]
+    }
+  ]
+}

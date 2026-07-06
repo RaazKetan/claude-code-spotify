@@ -23,7 +23,9 @@ pr = (d.get('pr') or {}).get('number')
 cw = d.get('context_window', {})
 pct = cw.get('used_percentage')
 tok = cw.get('total_input_tokens')
-lyric = sh(['python3', os.path.expanduser('~/.claude/spotify-lyrics.py'), '--line'])
+# spotify-lyrics.py lives next to this script (works from ~/.claude or a plugin dir)
+_LYRICS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'spotify-lyrics.py')
+lyric = sh(['python3', _LYRICS, '--line'])
 
 def rgb(r, g, b): return f'\033[38;2;{r};{g};{b}m'
 R, DIM, B = '\033[0m', '\033[2m', '\033[1m'

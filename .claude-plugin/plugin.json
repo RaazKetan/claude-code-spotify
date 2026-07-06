@@ -1,0 +1,15 @@
+{
+  "name": "spotify-statusline",
+  "displayName": "Spotify Statusline",
+  "version": "1.0.0",
+  "description": "Claude Code statusline showing session/model/branch/PR/context + the live synced Spotify lyric. Includes `spot`, a terminal Spotify remote.",
+  "author": {
+    "name": "Ketan Raj",
+    "url": "https://github.com/RaazKetan"
+  },
+  "homepage": "https://github.com/RaazKetan/claude-spotify-statusline",
+  "repository": "https://github.com/RaazKetan/claude-spotify-statusline",
+  "license": "MIT",
+  "keywords": ["statusline", "spotify", "lyrics", "macos"],
+  "hooks": "./hooks/hooks.json"
+}

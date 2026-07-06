@@ -19,13 +19,26 @@ Left to right: **session · model · folder · git branch · PR · context-usage
 
 ## Install
 
-**One-liner** (fetches the scripts, wires everything, preserves your existing `settings.json`):
+### As a Claude Code plugin (recommended)
+
+Inside Claude Code:
+
+```
+/plugin marketplace add RaazKetan/claude-spotify-statusline
+/plugin install spotify-statusline
+```
+
+Or just **ask Claude**: *"add the RaazKetan/claude-spotify-statusline plugin"* — it runs those commands for you. Restart Claude Code and the statusline activates itself (a bundled hook safely points your `settings.json` at the plugin's `statusline.py` — idempotent, preserves your other settings, self-heals on update). No curl, no manual editing.
+
+To turn it off: `/plugin uninstall spotify-statusline` and remove the `statusLine` key from `~/.claude/settings.json`.
+
+### One-liner (no plugin system)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/RaazKetan/claude-spotify-statusline/main/install.sh | bash
 ```
 
-Then **restart Claude Code**. That's it.
+Then **restart Claude Code**.
 
 <details>
 <summary>From a clone (if you'd rather read it first)</summary>
