@@ -1,14 +1,33 @@
 #!/bin/bash
-# Installer: copies scripts to ~/.claude, adds the `spot` alias, wires the
-# statusLine into ~/.claude/settings.json, and (optionally) stores Spotify creds.
+# Installer for claude-spotify-statusline.
+#
+# Works two ways:
+#   • one-liner:  curl -fsSL <raw>/install.sh | bash   (fetches scripts from GitHub)
+#   • from clone: ./install.sh                          (copies local scripts)
+#
+# Copies scripts to ~/.claude, adds the `spot` alias, wires the statusLine into
+# ~/.claude/settings.json (preserving your other settings), and optionally
+# stores Spotify API creds for search.
 set -e
+
 DEST="$HOME/.claude"
-SRC="$(cd "$(dirname "$0")" && pwd)"
+RAW_BASE="https://raw.githubusercontent.com/RaazKetan/claude-spotify-statusline/main"
+SCRIPTS="spot spotify-lyrics.py statusline.py"
 mkdir -p "$DEST"
 
-echo "→ copying scripts to $DEST"
-cp "$SRC/spot" "$SRC/spotify-lyrics.py" "$SRC/statusline.py" "$DEST/"
-chmod +x "$DEST/spot" "$DEST/spotify-lyrics.py" "$DEST/statusline.py"
+# Are we running from a local checkout, or piped from curl?
+SRC="$(cd "$(dirname "$0")" 2>/dev/null && pwd || true)"
+if [ -n "$SRC" ] && [ -f "$SRC/statusline.py" ]; then
+  echo "→ installing from local checkout ($SRC)"
+  for f in $SCRIPTS; do cp "$SRC/$f" "$DEST/$f"; done
+else
+  echo "→ fetching scripts from GitHub"
+  for f in $SCRIPTS; do
+    curl -fsSL "$RAW_BASE/$f" -o "$DEST/$f" || { echo "failed to fetch $f"; exit 1; }
+  done
+fi
+for f in $SCRIPTS; do chmod +x "$DEST/$f"; done
+echo "→ installed scripts to $DEST"
 
 # shell alias (zsh + bash)
 for rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
@@ -16,20 +35,6 @@ for rc in "$HOME/.zshrc" "$HOME/.bashrc"; do
   grep -q 'alias spot=' "$rc" || echo 'alias spot="$HOME/.claude/spot"' >> "$rc"
 done
 echo "→ added 'spot' alias (open a new terminal to use it)"
-
-# Spotify creds (optional — only needed for `spot search` and auto-play)
-if [ ! -f "$DEST/.spotify-creds" ]; then
-  echo
-  echo "Spotify search needs a free API app (id + secret): https://developer.spotify.com/dashboard"
-  read -rp "Spotify Client ID (blank to skip search feature): " ID
-  if [ -n "$ID" ]; then
-    read -rp "Spotify Client Secret: " SECRET
-    umask 077
-    printf 'SPOTIFY_ID=%s\nSPOTIFY_SECRET=%s\n' "$ID" "$SECRET" > "$DEST/.spotify-creds"
-    chmod 600 "$DEST/.spotify-creds"
-    echo "→ saved creds to $DEST/.spotify-creds (chmod 600)"
-  fi
-fi
 
 # merge statusLine into settings.json (preserves existing settings)
 python3 - "$DEST/settings.json" <<'PY'
@@ -42,6 +47,21 @@ s["statusLine"] = {"type": "command",
 json.dump(s, open(p, "w"), indent=2)
 print("→ wired statusLine into", p)
 PY
+
+# Spotify creds (optional — only `spot search` / auto-play need them). Auto-skipped
+# in a non-interactive (piped) run; re-run locally to add them.
+if [ ! -f "$DEST/.spotify-creds" ] && [ -t 0 ]; then
+  echo
+  echo "Spotify search needs a free API app (id + secret): https://developer.spotify.com/dashboard"
+  read -rp "Spotify Client ID (blank to skip search): " ID
+  if [ -n "$ID" ]; then
+    read -rp "Spotify Client Secret: " SECRET
+    umask 077
+    printf 'SPOTIFY_ID=%s\nSPOTIFY_SECRET=%s\n' "$ID" "$SECRET" > "$DEST/.spotify-creds"
+    chmod 600 "$DEST/.spotify-creds"
+    echo "→ saved creds to $DEST/.spotify-creds (chmod 600)"
+  fi
+fi
 
 echo
 echo "Done. RESTART Claude Code to load the statusline."
