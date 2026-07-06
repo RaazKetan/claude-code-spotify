@@ -25,19 +25,32 @@ pct = cw.get('used_percentage')
 tok = cw.get('total_input_tokens')
 lyric = sh(['python3', os.path.expanduser('~/.claude/spotify-lyrics.py'), '--line'])
 
-DIM, R, CY, YL = '\033[2m', '\033[0m', '\033[36m', '\033[33m'
-p = []
-if sid:            p.append(f'{DIM}◈ {sid}{R}')
-p.append(f'{CY}{model}{R}')
-p.append(f'{DIM}📁 {folder}{R}')
-if branch:         p.append(f'⎇ {branch}')
-if pr:             p.append(f'{YL}PR#{pr}{R}')
-if isinstance(tok, int):
-    p.append(f'⛁ {tok/1000:.0f}k' + (f' {pct}%' if pct is not None else ''))
-elif pct is not None:
-    p.append(f'⛁ {pct}%')
+def rgb(r, g, b): return f'\033[38;2;{r};{g};{b}m'
+R, DIM, B = '\033[0m', '\033[2m', '\033[1m'
+GREEN  = rgb(29, 185, 84)    # Spotify green
+BLUE   = rgb(88, 166, 255)
+PURPLE = rgb(190, 149, 255)
+ORANGE = rgb(255, 167, 38)
+RED    = rgb(248, 81, 73)
+GRAY   = rgb(139, 148, 158)
+SEP    = f' {GRAY}{DIM}•{R} '  # dim bullet, safe in any font
 
-line = f' {DIM}·{R} '.join(p)
+p = []
+if sid:      p.append(f'{GRAY}◈ {sid}{R}')          # session  ◈
+p.append(f'{PURPLE}{B}✦ {model}{R}')                # model    ✦
+p.append(f'{BLUE}\U0001f4c1 {folder}{R}')                # folder   📁
+if branch:   p.append(f'{GREEN}⎇ {branch}{R}')      # branch   ⎇
+if pr:       p.append(f'{ORANGE}⇅ #{pr}{R}')        # PR       ⇅
+
+if isinstance(tok, int) or pct is not None:
+    pc = pct if pct is not None else 0
+    tcol = RED if pc >= 80 else ORANGE if pc >= 50 else GREEN
+    filled = max(0, min(5, round(pc / 20)))
+    bar = tcol + '▰' * filled + f'{GRAY}{DIM}' + '▱' * (5 - filled) + R  # ▰▱
+    label = f'{tok/1000:.0f}k' if isinstance(tok, int) else f'{pc}%'
+    p.append(f'{bar} {tcol}{label}{R}')
+
+line = SEP.join(p)
 if lyric:
-    line += f'   {lyric}'
+    line += f'   {DIM}{GRAY}│{R} {lyric}'  # │ divider before music
 print(line)
