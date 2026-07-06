@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # spot lyrics — live synced lyrics from lrclib, fading as the song plays.
 # ponytail: lrclib (no key) + Spotify AppleScript position. Stdlib only.
-import re, sys, time, json, subprocess, urllib.parse, urllib.request
+import re, sys, os, time, json, subprocess, urllib.parse, urllib.request
+
+# Romanize non-Latin lyrics (Punjabi/Hindi) so they're singable in English.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    from romanize import romanize
+except Exception:
+    def romanize(s): return s
 
 LRC = re.compile(r'\[(\d+):(\d+(?:\.\d+)?)\]')
 
@@ -50,7 +57,7 @@ def render(lines, idx, cols):
                 color = gray(0.55 * (1 + off / (WIN + 1)))
             else:                    # upcoming -> steady dim
                 color = gray(0.35)
-            text = lines[i][1] or '♪'
+            text = romanize(lines[i][1]) or '♪'
             buf.append(f'{color}{text[:cols]}{RESET}')
         else:
             buf.append('')
@@ -152,7 +159,7 @@ def line_mode():
         else:
             break
     reset = '\033[0m'
-    print(f'{GRN}🎵 {title}{reset} \033[1;97m{cur or artist}{reset}')  # green song, bright lyric
+    print(f'{GRN}🎵 {title}{reset} \033[1;97m{romanize(cur) or artist}{reset}')  # green song, bright lyric
 
 if __name__ == '__main__':
     if '--selftest' in sys.argv:

@@ -63,6 +63,7 @@ Uses the app-only **Client Credentials** flow (no browser login), finds the top 
 - **Lyrics** — pulled from lrclib, cached per track in `/tmp/spot-lrc/`. The statusline **never blocks on the network**: on a cache miss it shows the track name and fetches in a detached background process that fills the cache for the next tick. Each render stays well under the 1-second refresh window (~0.2s), so Claude Code never cancels it mid-draw.
 - **Statusline fields** — session/model/context/PR come straight from the JSON Claude Code pipes to the command; the git branch is a local `git` call.
 - **Context bar** — `▰▰▰▱▱` fills with context-window usage and shifts green → orange → red as you approach the limit.
+- **Romanized lyrics** — Punjabi (Gurmukhi) and Hindi (Devanagari) lines are transliterated to Latin letters so you can sing along, e.g. `ਕੀ ਹੜੀ ਆ` → `kee haree aa`. Pure-Latin lyrics pass through untouched. Offline and phonetic — it's transliteration, not translation (the meaning stays in the original language).
 
 ## Notes / limits
 
