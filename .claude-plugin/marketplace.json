@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "spotify-statusline",
+  "name": "raazketan",
   "description": "A Claude Code statusline with live Spotify lyrics, plus a terminal Spotify remote.",
   "owner": {
     "name": "Ketan Raj",

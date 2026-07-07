@@ -19,10 +19,12 @@ Left to right: **session · model · folder · git branch · PR · context-usage
 
 ## Install
 
-Inside Claude Code:
+Inside Claude Code, run these **as two separate steps** — add the marketplace first, then install (don't paste both into one prompt):
 
 ```
 /plugin marketplace add RaazKetan/claude-code-spotify
+```
+```
 /plugin install spotify-statusline
 ```
 
@@ -33,7 +35,7 @@ To turn it off: `/plugin uninstall spotify-statusline` and remove the `statusLin
 ## `spot` — terminal remote
 
 `spot` ships alongside the statusline in the plugin directory. To use it in your
-shell, alias it there — e.g. `alias spot="$HOME/.claude/plugins/marketplaces/spotify-statusline/spot"`.
+shell, alias it there — e.g. `alias spot="$HOME/.claude/plugins/marketplaces/raazketan/spot"`.
 
 ```bash
 spot                 # now playing
