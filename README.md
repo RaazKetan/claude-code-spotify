@@ -13,7 +13,7 @@ tiny terminal remote for Spotify.
 
 ### Demo
 
-<video src="https://github.com/RaazKetan/claude-code-spotify/raw/main/assets/demo.mp4" controls width="100%"></video>
+![demo](assets/demo.gif)
 
 Left to right: **session · model · folder · git branch · PR · context-usage bar · now-playing lyric**. Fields with no data (no branch, no PR, nothing playing) simply drop out.
 
