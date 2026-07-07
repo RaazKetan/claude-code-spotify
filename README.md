@@ -11,6 +11,10 @@ tiny terminal remote for Spotify.
 ◈ 90d19fcb · ✦ Opus 4.8 (1M context) · 📁 Conekt · ⎇ docs/scoring-rubric · ⇅ #10 · ▰▰▰▱▱ 547k   │  🎵 The Winner Takes It All  Always staying low
 ```
 
+### Demo
+
+<video src="https://github.com/RaazKetan/claude-code-spotify/raw/main/assets/demo.mp4" controls width="100%"></video>
+
 Left to right: **session · model · folder · git branch · PR · context-usage bar · now-playing lyric**. Fields with no data (no branch, no PR, nothing playing) simply drop out.
 
 > **macOS only.** Playback control uses AppleScript against the Spotify **desktop app** (installed + running). Lyrics come from [lrclib.net](https://lrclib.net) — free, no key. Python 3 stdlib only, no pip installs.
