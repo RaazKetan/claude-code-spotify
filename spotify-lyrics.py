@@ -109,7 +109,8 @@ def spotify_now():
     Returns None if Spotify isn't running (and does NOT launch it)."""
     script = ('if application "Spotify" is running then tell application "Spotify" to '
               'return ((player state as text) & tab & (artist of current track) & tab & '
-              '(name of current track) & tab & (player position as text))')
+              '(name of current track) & tab & (player position as text) & tab & '
+              '(artwork url of current track))')
     try:
         out = subprocess.run(['osascript', '-e', script],
                              capture_output=True, text=True, timeout=3).stdout.strip()
@@ -122,7 +123,26 @@ def spotify_now():
         pos = float(p[3])
     except ValueError:
         pos = 0.0
-    return p[0], p[1], p[2], pos
+    return p[0], p[1], p[2], pos, (p[4] if len(p) > 4 else '')
+
+def vibe_color(art_url):
+    """Cached 'r;g;b' dominant color of album art, '' on miss (bg fetch fills it).
+    Also mirrors the value to /tmp/spot-vibe/current for statusline.py."""
+    import os, hashlib
+    if not art_url:
+        return ''
+    cdir = '/tmp/spot-vibe'; os.makedirs(cdir, exist_ok=True)
+    cf = os.path.join(cdir, hashlib.md5(art_url.encode()).hexdigest())
+    rgb = open(cf).read().strip() if os.path.exists(cf) else None
+    if rgb:
+        open(os.path.join(cdir, 'current'), 'w').write(rgb)
+        return rgb
+    if rgb is None or time.time() - os.path.getmtime(cf) >= 30:  # same reserve+cooldown as LRC
+        open(cf, 'w').write('')
+        subprocess.Popen(['python3', os.path.abspath(__file__), '--vibe', art_url],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         start_new_session=True)
+    return ''
 
 def line_mode():
     """Print ONE current lyric line, for the statusline. Caches LRC per track."""
@@ -131,10 +151,13 @@ def line_mode():
     now = spotify_now()
     if not now:
         print(f'{GRN}🎵 Spotify\033[0m'); return
-    state, artist, title, pos = now
+    state, artist, title, pos, art = now
+    rgb = vibe_color(art)
+    COL = f'\033[38;2;{rgb}m' if rgb else GRN  # album-art vibe, green until fetched
     if state != 'playing':
-        print(f'{GRN}⏸ {title}\033[0m \033[2m— {artist}\033[0m'); return
-    fallback = f'{GRN}🎵 {title}\033[0m \033[2m— {artist}\033[0m'
+        print(f'{COL}⏸ {title}\033[0m \033[2m— {artist}\033[0m'); return
+    note = '♪♫♬'[int(pos) % 3]  # position-driven so it freezes on pause
+    fallback = f'{COL}{note} {title}\033[0m \033[2m— {artist}\033[0m'
     cdir = '/tmp/spot-lrc'; os.makedirs(cdir, exist_ok=True)
     key = hashlib.md5(f'{artist}\t{title}'.encode()).hexdigest()
     cf = os.path.join(cdir, key)
@@ -159,7 +182,7 @@ def line_mode():
         else:
             break
     reset = '\033[0m'
-    print(f'{GRN}🎵 {title}{reset} \033[1;97m{romanize(cur) or artist}{reset}')  # green song, bright lyric
+    print(f'{COL}{note} {title}{reset} \033[1;97m{romanize(cur) or artist}{reset}')  # vibe song, bright lyric
 
 if __name__ == '__main__':
     if '--selftest' in sys.argv:
@@ -167,6 +190,29 @@ if __name__ == '__main__':
         assert p == [(35.18, 'one'), (43.56, 'two'), (60.0, 'three')], p
         assert parse_lrc('[00:10.0][00:20.0] echo') == [(10.0, 'echo'), (20.0, 'echo')]
         print('ok'); sys.exit(0)
+    if '--vibe' in sys.argv:  # background: album art -> dominant color cache
+        import os, hashlib, tempfile, colorsys
+        url = sys.argv[2]
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'spot-lyrics/1.0'})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                raw = r.read()
+            td = tempfile.mkdtemp()
+            src, bmp = os.path.join(td, 'a.jpg'), os.path.join(td, 'a.bmp')
+            open(src, 'wb').write(raw)
+            # ponytail: sips 1x1 = average color; BMP so the pixel is raw bytes, no image lib
+            subprocess.run(['sips', '-s', 'format', 'bmp', '-z', '1', '1', src, '--out', bmp],
+                           capture_output=True, timeout=10, check=True)
+            data = open(bmp, 'rb').read()
+            off = int.from_bytes(data[10:14], 'little')  # BMP header: pixel array offset
+            b, g, r = data[off], data[off + 1], data[off + 2]
+            h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+            r, g, b = (round(c * 255) for c in colorsys.hsv_to_rgb(h, max(s, .55), max(v, .8)))  # un-muddy the average
+            cf = os.path.join('/tmp/spot-vibe', hashlib.md5(url.encode()).hexdigest())
+            open(cf, 'w').write(f'{r};{g};{b}')
+        except Exception:
+            pass
+        sys.exit(0)
     if '--fetch' in sys.argv:  # background: fetch lyrics, overwrite cache only on success
         import os, hashlib
         artist, title = sys.argv[2], sys.argv[3]
