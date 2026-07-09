@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# Claude Code statusline: session · model · folder · branch · PR · tokens · 🎵 lyric
+# Claude Code statusline: session · model · folder · branch · PR · tokens · cost · diff · time · 🎵 lyric
 # All fields from the stdin JSON except branch (local git) and lyric (spotify-lyrics.py).
-import sys, json, os, subprocess
+import sys, json, os, time, subprocess
 
 def sh(args):
     try:
@@ -23,6 +23,10 @@ pr = (d.get('pr') or {}).get('number')
 cw = d.get('context_window', {})
 pct = cw.get('used_percentage')
 tok = cw.get('total_input_tokens')
+cost = d.get('cost') or {}
+usd = cost.get('total_cost_usd')
+added, removed = cost.get('total_lines_added'), cost.get('total_lines_removed')
+dur_ms = cost.get('total_duration_ms')
 # spotify-lyrics.py lives next to this script (works from ~/.claude or a plugin dir)
 _LYRICS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'spotify-lyrics.py')
 lyric = sh(['python3', _LYRICS, '--line'])
@@ -35,7 +39,14 @@ PURPLE = rgb(190, 149, 255)
 ORANGE = rgb(255, 167, 38)
 RED    = rgb(248, 81, 73)
 GRAY   = rgb(139, 148, 158)
-SEP    = f' {GRAY}{DIM}•{R} '  # dim bullet, safe in any font
+# vibe: album-art color written by spotify-lyrics.py --line; stale >10s = not playing
+try:
+    _V = '/tmp/spot-vibe/current'
+    vibe = open(_V).read().strip() if time.time() - os.path.getmtime(_V) < 10 else ''
+except Exception:
+    vibe = ''
+VIBE = f'\033[38;2;{vibe}m' if vibe else GRAY
+SEP  = f' {VIBE}{DIM}•{R} '  # dim bullet, safe in any font
 
 p = []
 if sid:      p.append(f'{GRAY}◈ {sid}{R}')          # session  ◈
@@ -52,7 +63,16 @@ if isinstance(tok, int) or pct is not None:
     label = f'{tok/1000:.0f}k' if isinstance(tok, int) else f'{pc}%'
     p.append(f'{bar} {tcol}{label}{R}')
 
+if isinstance(usd, (int, float)):
+    ccol = RED if usd >= 5 else ORANGE if usd >= 2 else GRAY
+    p.append(f'{ccol}${usd:.2f}{R}')                # cost     $
+if added or removed:
+    p.append(f'{GREEN}+{added or 0}{R}{GRAY}/{R}{RED}-{removed or 0}{R}')  # diff +/-
+if isinstance(dur_ms, (int, float)) and dur_ms >= 60_000:
+    m = int(dur_ms // 60_000)
+    p.append(f'{GRAY}⏱ {m//60}h{m%60:02d}m{R}' if m >= 60 else f'{GRAY}⏱ {m}m{R}')
+
 line = SEP.join(p)
 if lyric:
-    line += f'   {DIM}{GRAY}│{R} {lyric}'  # │ divider before music
+    line += f'   {DIM}{VIBE}│{R} {lyric}'  # │ divider before music
 print(line)

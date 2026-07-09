@@ -15,7 +15,9 @@ tiny terminal remote for Spotify.
 
 ![demo](assets/demo.gif)
 
-Left to right: **session · model · folder · git branch · PR · context-usage bar · now-playing lyric**. Fields with no data (no branch, no PR, nothing playing) simply drop out.
+Left to right: **session · model · folder · git branch · PR · context-usage bar · session cost · lines +/- · duration · now-playing lyric**. Fields with no data (no branch, no PR, nothing playing) simply drop out.
+
+Separators, the divider, and the song title are tinted with the **dominant color of the current album art** (fetched once per song, cached in `/tmp/spot-vibe`), and the note icon ♪♫♬ cycles with playback — the whole line changes mood with the music.
 
 > **macOS only.** Playback control uses AppleScript against the Spotify **desktop app** (installed + running). Lyrics come from [lrclib.net](https://lrclib.net) — free, no key. Python 3 stdlib only, no pip installs.
 

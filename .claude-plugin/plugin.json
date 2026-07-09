@@ -1,8 +1,8 @@
 {
   "name": "spotify-statusline",
   "displayName": "Spotify Statusline",
-  "version": "1.1.0",
-  "description": "Claude Code statusline showing session/model/branch/PR/context + the live synced Spotify lyric. Includes `spot`, a terminal Spotify remote.",
+  "version": "1.2.0",
+  "description": "Claude Code statusline showing session/model/branch/PR/context/cost/diff/duration + the live synced Spotify lyric, tinted with the album-art color. Includes `spot`, a terminal Spotify remote.",
   "author": {
     "name": "Ketan Raj",
     "url": "https://github.com/RaazKetan"
