@@ -144,18 +144,18 @@ def vibe_color(art_url):
                          start_new_session=True)
     return ''
 
-def line_mode():
-    """Print ONE current lyric line, for the statusline. Caches LRC per track."""
+def status_line():
+    """Return ONE current lyric line for the statusline (importable). Caches LRC per track."""
     import os, hashlib
     GRN = '\033[38;2;29;185;84m'  # Spotify green #1DB954
     now = spotify_now()
     if not now:
-        print(f'{GRN}🎵 Spotify\033[0m'); return
+        return f'{GRN}🎵 Spotify\033[0m'
     state, artist, title, pos, art = now
     rgb = vibe_color(art)
     COL = f'\033[38;2;{rgb}m' if rgb else GRN  # album-art vibe, green until fetched
     if state != 'playing':
-        print(f'{COL}⏸ {title}\033[0m \033[2m— {artist}\033[0m'); return
+        return f'{COL}⏸ {title}\033[0m \033[2m— {artist}\033[0m'
     note = '♪♫♬'[int(pos) % 3]  # position-driven so it freezes on pause
     fallback = f'{COL}{note} {title}\033[0m \033[2m— {artist}\033[0m'
     cdir = '/tmp/spot-lrc'; os.makedirs(cdir, exist_ok=True)
@@ -171,10 +171,10 @@ def line_mode():
             subprocess.Popen(['python3', os.path.abspath(__file__), '--fetch', artist, title],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                              start_new_session=True)  # detached bg fetch fills cache
-        print(fallback); return
+        return fallback
     lines = parse_lrc(text)
     if not lines:
-        print(fallback); return
+        return fallback
     cur = ''
     for t, ln in lines:
         if t <= pos:
@@ -182,7 +182,7 @@ def line_mode():
         else:
             break
     reset = '\033[0m'
-    print(f'{COL}{note} {title}{reset} \033[1;97m{romanize(cur) or artist}{reset}')  # vibe song, bright lyric
+    return f'{COL}{note} {title}{reset} \033[1;97m{romanize(cur) or artist}{reset}'  # vibe song, bright lyric
 
 if __name__ == '__main__':
     if '--selftest' in sys.argv:
@@ -222,5 +222,5 @@ if __name__ == '__main__':
             open(cf, 'w').write(text)
         sys.exit(0)
     if '--line' in sys.argv:
-        line_mode(); sys.exit(0)
+        print(status_line()); sys.exit(0)
     main()

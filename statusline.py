@@ -27,9 +27,19 @@ cost = d.get('cost') or {}
 usd = cost.get('total_cost_usd')
 added, removed = cost.get('total_lines_added'), cost.get('total_lines_removed')
 dur_ms = cost.get('total_duration_ms')
-# spotify-lyrics.py lives next to this script (works from ~/.claude or a plugin dir)
+# spotify-lyrics.py lives next to this script (works from ~/.claude or a plugin dir).
+# Import it in-process instead of subprocessing --line: one fewer Python startup/tick.
 _LYRICS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'spotify-lyrics.py')
-lyric = sh(['python3', _LYRICS, '--line'])
+def _load_lyric():
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('spotlyrics', _LYRICS)
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        return m.status_line()  # also mirrors album-art vibe to /tmp/spot-vibe/current
+    except Exception:
+        return ''
+lyric = _load_lyric()
 
 def rgb(r, g, b): return f'\033[38;2;{r};{g};{b}m'
 R, DIM, B = '\033[0m', '\033[2m', '\033[1m'
